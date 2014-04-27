@@ -129,6 +129,7 @@ int convertAng(char infile[],int NumSamples){
 	int Cnt;
 	char outfile[BUFFER_SIZE];
 	double raRad,decRad,deg2rad,cdecRad;
+	double prob;
 	source sdata;
 	pcsource pcdata;
 	FILE *in,*out;
@@ -144,7 +145,6 @@ int convertAng(char infile[],int NumSamples){
 	#endif
 	out = fopen(outfile,"w");
 	Cnt=NumSamples;
-	
 	#ifndef USE_DISK
 	fwrite(&Cnt,sizeof(int),1,out);
 	for(i=0;i<=NumSamples;i++){
@@ -154,7 +154,7 @@ int convertAng(char infile[],int NumSamples){
 	deg2rad = M_PI/180.;
 	Cnt = 0;
 	while(!feof(in)){
-		fscanf(in,"%lf %lf%*[^\n]",&sdata.ra,&sdata.dec);
+		fscanf(in,"%lf %lf %lf%*[^\n]",&sdata.ra,&sdata.dec,&prob);
 		if(!feof(in)){
 			Cnt++;
 			raRad = deg2rad*sdata.ra;
@@ -163,6 +163,7 @@ int convertAng(char infile[],int NumSamples){
 			pcdata.x = cos(raRad)*cdecRad;
 			pcdata.y = sin(raRad)*cdecRad;
 			pcdata.z = sin(decRad);
+			pcdata.probability = prob;
 			fwrite(&pcdata,sizeof(pcsource),1,out);
 		}
 	}
@@ -172,10 +173,8 @@ int convertAng(char infile[],int NumSamples){
 	fwrite(&NumSamples,sizeof(int),1,out);
 	fwrite(&Cnt,sizeof(int),1,out);
 	#endif
-
 	fclose(in);
 	fclose(out);
-
 	return Cnt;
 }
 

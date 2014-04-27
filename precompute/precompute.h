@@ -29,6 +29,7 @@ typedef struct _pcsource{
 	double x;
 	double y;
 	double z;
+	double probability;
 }pcsource;
 
 typedef struct _spaTreeNode{
@@ -43,7 +44,7 @@ typedef struct _spaTreeNode{
 
 typedef struct _angTreeNode{
 	int Sample;
-	int Cnt;
+	double Cnt;
 	int Start;
 	int End;
 	double x,y,z;

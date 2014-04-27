@@ -734,6 +734,8 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 	unsigned long long int Add,*CntSave;
 	double mindist,maxdist,csep,ssep,crange,srange,term1,term2;
 	int Bin1,Bin2,BinStart,BinStop;
+	int dataPoints_n1, dataPoints_n2;
+	double prob;
 	angTreeNode *node1,*node2;
 	typedef struct stack_{
 		angTreeNode *n1,*n2;
@@ -771,6 +773,8 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 		node2 = mystack->n2;
 		BinStart = mystack->Fbin;
 		BinStop = mystack->Lbin;
+		dataPoints_n1 = node1->End - node1->Start;
+		dataPoints_n2 = node2->End - node2->Start;
 
 		/* Avoid redundant calculations */
 		if(node1->Start >= node2->End){
@@ -801,7 +805,7 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 						while(csep > bins[Bin1].limit){
 							Bin1++;
 						}
-						bins[Bin1].Cnt[0]++;
+						bins[Bin1].Cnt[0]+=(data[i].probability*data[j].probability);
 					}
 				}
 				Sample1 = node1->Sample;
@@ -855,7 +859,7 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 						while(csep > bins[Bin1].limit){
 							Bin1++;
 						}
-						bins[Bin1].Cnt[0]++;
+						bins[Bin1].Cnt[0]+=(data[i].probability*data[j].probability);
 					}
 				}
 				
@@ -879,7 +883,7 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 				free(mystack);
 				mystack = newstack;
 				
-			}else if(node1->Cnt > node2->Cnt){	/* Explore children of node1 */
+			}else if(dataPoints_n1 > dataPoints_n2){	/* Explore children of node1 */
 				newstack = malloc(sizeof(stack));
 				if(newstack == NULL){
 					printf("Failed to allocate stack in dualtreeAC...WRONG RESULTS\n");
@@ -1000,10 +1004,6 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 				
 				/* Bins are the same, so avoid looking at the individual points in node2 by	*
 				 * single-tree subsumption							*/
-				if(Bin1 == Bin2){
-					bins[Bin1].Cnt[0] += node2->Cnt;
-					continue;
-				}
 				
 				/* Brute force calculation necessary */
 				/* More efficient to avoid references to a node in the inner loop */
@@ -1013,7 +1013,7 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 					while(csep > bins[Bin1].limit){
 						Bin1++;
 					}
-					bins[Bin1].Cnt[0]++;
+					bins[Bin1].Cnt[0]+=(data[i].probability*data[j].probability);
 				}
 			}
 			
@@ -1038,8 +1038,8 @@ static void dualtreeACangular(const pcsource data[],void *nodeA,void *nodeB,bin 
 			mystack = newstack;
 		
 		}else{	/* Explore children */
-		
-			if(node1->Cnt > node2->Cnt){	/* open node1 */
+
+			if(dataPoints_n1 > dataPoints_n2){	/* open node1 */
 				newstack = malloc(sizeof(stack));
 				if(newstack == NULL){
 					printf("Failed to allocate stack in dualtreeAC...WRONG RESULTS\n");
@@ -1098,6 +1098,8 @@ static void dualtreeCCangular(const pcsource data1[],const pcsource data2[],void
 	unsigned long long int Add,*CntSave;
 	double mindist,maxdist,csep,ssep,crange,srange,term1,term2;
 	int Bin1,Bin2,BinStart,BinStop;
+	int dataPoints_n1, dataPoints_n2;
+	double prob;
 	angTreeNode *node1,*node2;
 	typedef struct stack_{
 		angTreeNode *n1,*n2;
@@ -1135,6 +1137,8 @@ static void dualtreeCCangular(const pcsource data1[],const pcsource data2[],void
 		node2 = mystack->n2;
 		BinStart = mystack->Fbin;
 		BinStop = mystack->Lbin;
+		dataPoints_n1 = node1->End - node1->Start;
+		dataPoints_n2 = node2->End - node2->Start;
 
 		/* csep is cos(sep) between normal vectors */
 		csep = node1->x*node2->x + node1->y*node2->y + node1->z*node2->z;
@@ -1159,10 +1163,10 @@ static void dualtreeCCangular(const pcsource data1[],const pcsource data2[],void
 						while(csep > bins[Bin1].limit){
 							Bin1++;
 						}
-						bins[Bin1].Cnt[0]++;
+						bins[Bin1].Cnt[0]+=(data1[i].probability*data2[j].probability);
 					}
 				}
-				
+
 				/* Update sample counts */
 				Sample1 = node1->Sample;
 				Sample2 = node2->Sample;
@@ -1183,7 +1187,7 @@ static void dualtreeCCangular(const pcsource data1[],const pcsource data2[],void
 				free(mystack);
 				mystack = newstack;
 				
-			}else if(node1->Cnt > node2->Cnt){	/* Explore children of node1 */
+			}else if(dataPoints_n1 > dataPoints_n2){	/* Explore children of node1 */
 				newstack = malloc(sizeof(stack));
 				if(newstack == NULL){
 					printf("Failed to allocate stack in dualtreeCC...WRONG RESULTS\n");
@@ -1305,10 +1309,7 @@ static void dualtreeCCangular(const pcsource data1[],const pcsource data2[],void
 
 				/* Bins are the same, so avoid looking at the individual points in node2 by	*
 				 * single-tree subsumption							*/
-				if(Bin1 == Bin2){
-					bins[Bin1].Cnt[0] += node2->Cnt;
-					continue;
-				}
+				
 				
 				/* Brute force calculation necessary */
 				/* More efficient to avoid references to a node in the inner loop */
@@ -1318,7 +1319,7 @@ static void dualtreeCCangular(const pcsource data1[],const pcsource data2[],void
 					while(csep > bins[Bin1].limit){
 						Bin1++;
 					}
-					bins[Bin1].Cnt[0]++;
+					bins[Bin1].Cnt[0]+=(data1[i].probability*data2[j].probability);
 				};
 			}
 			
@@ -1344,7 +1345,7 @@ static void dualtreeCCangular(const pcsource data1[],const pcsource data2[],void
 		
 		}else{	/* Explore children */
 		
-			if(node1->Cnt > node2->Cnt){	/* open node1 */
+			if(dataPoints_n1 > dataPoints_n2){	/* open node1 */
 				newstack = malloc(sizeof(stack));
 				if(newstack == NULL){
 					printf("Failed to allocate stack in dualtreeCC...WRONG RESULTS\n");

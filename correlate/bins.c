@@ -21,23 +21,23 @@ bin *binBuildSpatial(double minDist,double maxDist){
 	for(i=0;i<=NumBins;i++){
 		bins[i].limit  = maxDist*maxDist*pow(minDist/maxDist,(2.*(double)i)/((double)NumBins));
 		bins[i].center  = maxDist*pow(minDist/maxDist,((double)i-0.5)/((double)NumBins));
-		bins[i].Cnt = malloc((NumSamples+1)*sizeof(unsigned long long int));
+		bins[i].Cnt = malloc((NumSamples+1)*sizeof(long double));
 		if(bins[i].Cnt == NULL){
 			fprintf(stderr,"Failed to allocate sample space in binBuild\n");
 			return NULL;
 		}
 		for(j=0;j<=NumSamples;j++){
-			bins[i].Cnt[j] = 0;
+			bins[i].Cnt[j] = 0.00;
 		}
 	}
 	bins[NumBins+1].limit = 0.;
-	bins[NumBins+1].Cnt = malloc((NumSamples+1)*sizeof(unsigned long long int));
+	bins[NumBins+1].Cnt = malloc((NumSamples+1)*sizeof(long double));
 	if(bins[NumBins+1].Cnt == NULL){
 		fprintf(stderr,"Failed to allocate sample space in binBuild\n");
 		return NULL;
 	}
 	for(i=0;i<=NumSamples;i++){
-		bins[NumBins+1].Cnt[i] = 0;
+		bins[NumBins+1].Cnt[i] = 0.00;
 	}
 	
 	DEBUGPRINT("Exiting binBuildSpatial\n");
@@ -67,23 +67,23 @@ bin *binBuildAngular(double minAngle,double maxAngle){
 		bins[i].limit  = cos(maxAngle*pow(minAngle/maxAngle,((double)i)/((double)NumBins)));
 		/* Get the center of the bin in degrees for printing */
 		bins[i].center  = 180./M_PI*maxAngle*pow(minAngle/maxAngle,((double)i-0.5)/((double)NumBins));
-		bins[i].Cnt = malloc((NumSamples+1)*sizeof(unsigned long long int));
+		bins[i].Cnt = malloc((NumSamples+1)*sizeof(long double));
 		if(bins[i].Cnt == NULL){
 			fprintf(stderr,"Failed to allocate sample space in binBuild\n");
 			return NULL;
 		}
 		for(j=0;j<=NumSamples;j++){
-			bins[i].Cnt[j] = 0;
+			bins[i].Cnt[j] = 0.00;
 		}
 	}
 	bins[NumBins+1].limit = 2.;
-	bins[NumBins+1].Cnt = malloc((NumSamples+1)*sizeof(unsigned long long int));
+	bins[NumBins+1].Cnt = malloc((NumSamples+1)*sizeof(long double));
 	if(bins[NumBins+1].Cnt == NULL){
 		fprintf(stderr,"Failed to allocate sample space in binBuild\n");
 		return NULL;
 	}
 	for(i=0;i<=NumSamples;i++){
-		bins[NumBins+1].Cnt[i] = 0;
+		bins[NumBins+1].Cnt[i] = 0.00;
 	}
 
 	DEBUGPRINT("Exiting binBuildAngular\n");
@@ -124,9 +124,9 @@ void binPrint(char filename[],bin bins[],int Samples1[],int Samples2[],int BinTy
 	}
 
 	for(i=1;i<=NumBins;i++){
-		fprintf(out,"%16.12f %19llu",bins[i].center,MultFactor*bins[i].Cnt[0]);
+		fprintf(out,"%16.12f %Lf",bins[i].center,MultFactor*bins[i].Cnt[0]);
 		for(j=1;j<=NumSamples;j++){
-			fprintf(out," %19llu",MultFactor*bins[i].Cnt[j]);
+			fprintf(out," %Lf",MultFactor*bins[i].Cnt[j]);
 		}
 		fprintf(out,"\n");
 	}
@@ -146,7 +146,7 @@ void binClear(bin bins[]){
 	
 	for(i=0;i<=NumBins+1;i++){
 		for(j=0;j<=NumSamples;j++){
-			bins[i].Cnt[j] = 0;
+			bins[i].Cnt[j] = 0.00;
 		}
 	}
 	
@@ -194,7 +194,7 @@ void binReduceOmp(bin bins[]){
 		for(j=0;j<=NumSamples;j++){
 			index = i*NSp1 + j;
 			#pragma omp atomic
-				GlobalCnts[index] += bins[i].Cnt[j];
+				GlobalCnts[index] += (int)bins[i].Cnt[j];
 		}
 	}
 
@@ -204,7 +204,7 @@ void binReduceOmp(bin bins[]){
 	for(i=0;i<=NumBins;i++){
 		for(j=0;j<=NumSamples;j++){
 			index = i*NSp1 + j;
-			bins[i].Cnt[j] = GlobalCnts[index];
+			bins[i].Cnt[j] = (double)GlobalCnts[index];
 		}
 	}
 	free(GlobalCnts);
@@ -266,7 +266,7 @@ void binReduce(bin bins[]){
 		for(j=0;j<=NumSamples;j++){
 			index = i*Nsp1 + j;
 			Cnts[index] = 0;
-			Bcnts[index] = bins[i].Cnt[j];
+			Bcnts[index] = (int)bins[i].Cnt[j];
 		}
 	}
 
@@ -274,7 +274,7 @@ void binReduce(bin bins[]){
 	MPI_Reduce(&(Bcnts[0]),&(Cnts[0]),Nbp1*Nsp1,MPI_UNSIGNED_LONG_LONG,operator,0,MPI_COMM_WORLD);
 	for(i=0;i<Nbp1;i++){
 		for(j=0;j<=NumSamples;j++){
-			bins[i].Cnt[j] = Cnts[i*Nsp1 + j];
+			bins[i].Cnt[j] = (double)Cnts[i*Nsp1 + j];
 		}
 	}
 	

@@ -13,7 +13,7 @@ int main(int argc, char *argv[]){
 	double dLogSamples;
 	splitlog *dsplit;
 	FILE *list,*newlist;
-	
+
 	if(argc != 4 && argc != 3){
 		fprintf(stderr,"Usage:  precompute filenames.list 0 [NumSamples]\t for angular calculation\n");
 		fprintf(stderr,"Usage:  precompute filenames.list 1 [NumSamples]\t for spatial calculation\n");

@@ -125,13 +125,16 @@ static angTreeNode *angTreeFill(angTreeNode *root){
 /************ Non-MPI only tree functions *******************/
 
 #ifndef USE_MPI
-void *treeRead(char dataName[], void *tblock){
+void *treeRead(char dataName[], void *tblock, pcsource data[]){
 
 /* Read in tree from file and fill pointers */
 
 	int size;
+	double prob;
 	char treeFile[BUFFER_SIZE];
 	FILE *in;
+	angTreeNode *anode;
+	spaTreeNode *snode;
 	
 	TIMESTART(startTime);
 	DEBUGPRINT("Entering treeRead\n");
@@ -177,11 +180,83 @@ void *treeRead(char dataName[], void *tblock){
 	
 	fclose(in);
 	
+	if(AngOrSpa == 0){
+		anode = (angTreeNode *)tblock;
+		prob = accumulateProbabilityAngular(data, anode);
+	}else{
+		snode = (spaTreeNode *)tblock;
+		prob = accumulateProbabilitySpatial(data, snode);
+	}
 	DEBUGPRINT("Exiting treeRead\n");
 	TIMESTOP(wallTreeRead,startTime);
 	
 	return tblock;
 }
+
+double accumulateProbabilityAngular(pcsource data[], angTreeNode *node){
+
+	int i;
+	double count, leftCount, rightCount;
+	count = 0;
+
+	if(node==NULL)
+	{
+		fprintf(stderr, "Something went wrong. Problem in accProbabAngular");
+		return 0;
+	}
+
+	if(node->lptr == NULL && node->rptr == NULL) 
+	{
+		for(i=node->Start; i<=node->End; i++)
+			{
+				count += data[i].probability; //accumulate probability
+			}
+		node->Cnt = count;
+		return count;
+	}
+	
+	else //not a leaf node; explore children
+	{
+		leftCount = accumulateProbabilityAngular(data, node->lptr);
+		rightCount = accumulateProbabilityAngular(data, node->rptr);
+		count = leftCount + rightCount;
+		node->Cnt = count; 
+	}
+	return count;
+}
+
+double accumulateProbabilitySpatial(pcsource data[], spaTreeNode *node){
+
+	int i;
+	double count, leftCount, rightCount;
+	count = 0;
+
+	if(node==NULL)
+	{
+		fprintf(stderr, "Something went wrong. Problem in accProbab");
+		return 0;
+	}
+
+	if(node->lptr == NULL && node->rptr == NULL) 
+	{
+		for(i=node->Start; i<=node->End; i++)
+			{
+				count += data[i].probability;
+			}
+		node->Cnt = count;
+		return count;
+	}
+	
+	else //not a leaf node; explore children
+	{
+		leftCount = accumulateProbabilitySpatial(data, node->lptr);
+		rightCount = accumulateProbabilitySpatial(data, node->rptr);
+		count = leftCount + rightCount;
+		node->Cnt = count; 
+	}
+	return count;
+}
+
 #endif
 
 

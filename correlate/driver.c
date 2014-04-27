@@ -16,11 +16,12 @@ Outputs:	Unnormalized bin counts including jackknife resampling
 	char fileList[BUFFER_SIZE],dataName[BUFFER_SIZE],randName[BUFFER_SIZE],binOutFile[BUFFER_SIZE],curFile[BUFFER_SIZE];
 	int i,j,NumData,NumRand,WorkLevel,NumDataFiles,NumRandFiles,Terminate;
 	int *Dsamples,*Rsamples,getDD,getDR,getRR;
-	double minDist,maxDist;
+	double minDist,maxDist,prob;
 	FILE *list;
 	pcsource *data,*rand,*block1,*block2;
 	void *rootDataTree,*rootRandTree,*tblock1,*tblock2;
 	bin *ddbins,*drbins,*rrbins;
+	angTreeNode *temp, *temp2;
 	
 	/* parallel specific variables */
 	#if defined (USE_MPI) || defined (USE_OMP)
@@ -155,7 +156,10 @@ Outputs:	Unnormalized bin counts including jackknife resampling
 				sprintf(curFile,"%s%d",dataName,i);
 				data = pcsourceRead(curFile,block1,&Dsamples);
 				NumData += Dsamples[0];				// Add to total count for this data set
-				rootDataTree = treeRead(curFile,tblock1);
+				rootDataTree = treeRead(curFile,tblock1,data);
+				temp = (angTreeNode *)rootDataTree;
+				//prob = accumulateProbability(data, temp); 
+				//rootDataTree = (void *)temp;
 				WORKNODES(rootDataTree,dworknodes);		// Fill list of worknodes, if parallel
 			}
 			#pragma omp barrier
@@ -166,7 +170,11 @@ Outputs:	Unnormalized bin counts including jackknife resampling
 				{
 					sprintf(curFile,"%s%d",dataName,j);
 					rand = pcsourceRead(curFile,block2,&Rsamples);
-					rootRandTree = treeRead(curFile,tblock2);
+					rootRandTree = treeRead(curFile,tblock2,rand);
+					//temp2 = (angTreeNode *)rootRandTree;
+					//prob = accumulateProbability(rand, temp2); 
+					//rootRandTree = (void *)temp2;
+					//printf("%f\n", rand[0].probability);
 				}
 				#pragma omp barrier
 				CC(data,rand,dworknodes,rootDataTree,rootRandTree,ddbins);
@@ -228,7 +236,7 @@ Outputs:	Unnormalized bin counts including jackknife resampling
 				sprintf(curFile,"%s%d",randName,i);
 				rand = pcsourceRead(curFile,block1,&Rsamples);
 				NumRand += Rsamples[0];
-				rootRandTree = treeRead(curFile,tblock1);
+				rootRandTree = treeRead(curFile,tblock1,rand);
 				WORKNODES(rootRandTree,rworknodes);
 			}
 			if(i == 0){
@@ -245,7 +253,7 @@ Outputs:	Unnormalized bin counts including jackknife resampling
 						sprintf(curFile,"%s%d",dataName,j);
 						data = pcsourceRead(curFile,block2,&Dsamples);
 						NumData += Dsamples[0];
-						rootDataTree = treeRead(curFile,tblock2);
+						rootDataTree = treeRead(curFile,tblock2,data);
 					}
 					#pragma omp barrier
 					/* Get the counts */
@@ -265,7 +273,7 @@ Outputs:	Unnormalized bin counts including jackknife resampling
 					{
 						sprintf(curFile,"%s%d",randName,j);
 						data = pcsourceRead(curFile,block2,&Dsamples);
-						rootDataTree = treeRead(curFile,tblock2);
+						rootDataTree = treeRead(curFile,tblock2,data);
 					}
 					#pragma omp barrier
 					/* Get the counts */

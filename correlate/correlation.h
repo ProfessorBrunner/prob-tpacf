@@ -88,11 +88,12 @@ typedef struct _pcsource{
 	double x;
 	double y;
 	double z;
+	double probability;
 }pcsource;
 
 typedef struct _bin{
 	double limit;
-	unsigned long long int *Cnt;
+	long double *Cnt;
 	double center;
 }bin;
 
@@ -108,7 +109,7 @@ typedef struct _spaTreeNode{
 
 typedef struct _angTreeNode{
 	int Sample;
-	int Cnt;
+	double Cnt;
 	int Start;
 	int End;
 	double x,y,z;
@@ -149,8 +150,10 @@ void pcsourceGetMemory(pcsource **block1,pcsource **block2,char *fileList);
 pcsource *pcsourceRead(char infile[],pcsource *block,int **Samples);
 
 /* tree functions */
-void *treeRead(char treeFile[], void *tblock);
+void *treeRead(char treeFile[], void *tblock, pcsource data[]);
 void treeGetMemory(void **tblock1,void **tblock2,char *filelist);
+double accumulateProbabilityAngular(pcsource data[], angTreeNode *node);
+double accumulateProbabilitySpatial(pcsource data[], spaTreeNode *node);
 #if defined (USE_MPI) || defined (USE_OMP)
 int angTreeWorkNodes(angTreeNode *node,int WorkLevel,int CurNum,angTreeNode *worknodes[]);
 int spaTreeWorkNodes(spaTreeNode *node,int WorkLevel,int CurNum,spaTreeNode *worknodes[]);

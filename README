@@ -1,11 +1,10 @@
-prob-tpacf
-==========
+Correlation Code - v.0.9
+Dolence & Brunner
+Brief summary of what the code does:
 
-Fast two-point correlation code with probabilistic weighting.
-Correlation Code - v.0.1
-Based on Dolence & Brunner TPACF code
+The Two-Point Angular Correlation function, simply put, quantifies the excess probability above a random distribution of finding an astronomical body (in this case, galaxy) within a specified angle of another astronomical body. To see how it's applied to a particular data set, see http://arxiv.org/pdf/1303.2432v2.pdf (where the Two-Point function is applied to the seventh data release of the Sloan Digital Sky Survey). If you look at correlate.c, there's two main functions that do the work, dualTreeACSpatial and dualTreeACAngular (to get a feel of how the two algorithms are implemented, refer to http://www.linuxclustersinstitute.org/conferences/archive/2008/PDF/Dolence_98279.pdf). 
 
-(Brief) Instructions:
+Instructions for trying out the code on your machine:
 
 ***********************
 ***** 1. Building *****
@@ -13,7 +12,7 @@ Based on Dolence & Brunner TPACF code
 
 Change the "make.config" file to reflect the compiler(s) and flags appropriate to your machine and "params.h" to set the build options.
 
-Type "make all"
+Type "make all" to run the code. 
 
 If the build was successful, the following files should be located in the "bin" directory:
 
@@ -21,7 +20,11 @@ precompute
 correlate
 estimate
 
-To build specific programs, running make with no arguments gives a list of targets.
+To build specific programs, you need to run "make" with these targets for separate functions:
+
+			1. pre for Precompute code
+			2. corr for Correlation code
+			3. est for Estimation code
 
 To clean the build, type "make clean"
 
@@ -30,7 +33,7 @@ To clean the build, type "make clean"
 ***** 2. Testing ******
 ***********************
 
-After compiling the code, it's important to verify that the code is functioning.  Test data and correct outputs can be found in the test directory.  If the code has been compiled to run serially, simply enter the test directory and run the "runserial.sh" script.  This script automates the precomputing and bin counting phases described below and checks the results against the correct answers, reporting if any problems were detected.  If the code is to be run in parallel, in particular through a batch queue, you'll need to run the code appropriately for your system, then use the "compare.sh" script which simply checks the output of the parallel run with the correct answers and reports any problems.
+After compiling the code, it's important to verify that the code is functioning.  Test data and correct outputs can be found in the test directory.  If the code has been compiled to run serially, simply enter the test directory and run the "runserial.sh" script using the command "sh runserial.sh" on your system.  This script automates the precomputing and bin counting phases described below and checks the results against the correct answers, reporting if any problems were detected.  If the code is to be run in parallel, in particular through a batch queue, you'll need to run the code appropriately for your system, then use the "compare.sh" script which simply checks the output of the parallel run with the correct answers and reports any problems.
 
 
 ***********************
@@ -43,7 +46,7 @@ Computing a correlation involves 3 steps: precomputing, counting pairs, and esti
 **** Precomputing *****
 
 Source data files should be plain text and stored as "RA DEC [z ...]", one source per line.
-A file should be created that lists each data file, one per line (just use ls data* > filelist).  For an autocorrelation, the source file should be listed first followed by the randoms.  For a cross-correlation, the two files should be ...
+A file should be created that lists each data file, one per line (just use ls data* > filelist).  For an autocorrelation, the source file should be listed first followed by the randoms.  
 
 Now run precompute with the file list, angular/spatial flag (0 for angular, 1 for spatial), and, optionally, the number of jackknife samples (default set in "params.h") as command line arguments.
 
@@ -61,6 +64,7 @@ Depending on the build parameters in params.h and the size of the data, 2 or mor
 **** Getting bin counts ******
 
 Create a parameter file for the correlation run using the example in the samples directory.  See Dolence & Brunner (2008) for details on the work level parameter.
+
 To run the code, be sure that the working directory of the program contains the *bin and *tree files generated from precomputing, the parameter file which is the command line argument, and the file list used in precomputing.
 
 SERIAL:
@@ -80,7 +84,7 @@ Once complete, there should be files ending in *bins which contain the unnormali
 
 **** Estimation *****
 
-Work in progress....
+An estimator hasn't been implemented in our code. But you could potentially implement your own Landy-Szalay estimator using http://adsabs.harvard.edu/full/1993ApJ...412...64L as inspiration. 
 
 
 ****************************************************************************

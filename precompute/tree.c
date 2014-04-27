@@ -400,7 +400,8 @@ static void spaTreeBuild(spaTreeNode *node,pcsource data[],int TreeInd[],int Log
 		lNewNode.End = DivideInd;
 		lNewNode.lptr = NULL;
 		lNewNode.rptr = NULL;
-		
+		printf("%d\n", lNewNode.Cnt);
+
 		rNewNode.Sample = Sample;
 		rNewNode.Cnt = Cnt - lNewNode.Cnt;
 		rNewNode.Start = DivideInd+1;
@@ -570,6 +571,7 @@ static void spaTreeBuildRan(spaTreeNode *node,pcsource rand[],int TreeInd[],int 
 	rNewNode->End = node->End;
 	rNewNode->lptr = NULL;
 	rNewNode->rptr = NULL;
+
 
 	smallx = smally = smallz = HUGEDBL;
 	bigx = bigy = bigz = -HUGEDBL;
@@ -786,10 +788,11 @@ static void angTreeBuild(angTreeNode *node,double x[],double y[],double z[],pcso
 /* Builds tree for angular data */
 
 	char filename[BUFFER_SIZE];
-	int i,Dim,DivideInd,Cnt,Sample,Start,End;
+	int i,Dim,DivideInd,Sample,Start,End;
 	double split,xsize,ysize,zsize,norm;
 	double smallx,smally,smallz,bigx,bigy,bigz,avgx,avgy,avgz;
 	double mind,mindsq,d;
+	double Cnt;
 	angTreeNode lNewNode,rNewNode;
 	filelist *tfiles;
 	typedef struct _stack{
@@ -802,7 +805,7 @@ static void angTreeBuild(angTreeNode *node,double x[],double y[],double z[],pcso
 		struct _stack *next;
 	}stack;
 	stack *nstack,*nnstack;
-	
+
 	nstack = malloc(sizeof(stack));
 	if(nstack == NULL){
 		printf("Failed to allocate stack space in buildtree\n");
@@ -910,9 +913,9 @@ static void angTreeBuild(angTreeNode *node,double x[],double y[],double z[],pcso
 			dsplit[isplit].val = split;
 			isplit++;
 		}
-		
+
 		lNewNode.Sample = Sample;
-		lNewNode.Cnt = DivideInd-Start+1;
+		lNewNode.Cnt = (double) DivideInd-Start+1;
 		lNewNode.Start = Start;
 		lNewNode.End = DivideInd;
 		lNewNode.lptr = NULL;
@@ -924,16 +927,16 @@ static void angTreeBuild(angTreeNode *node,double x[],double y[],double z[],pcso
 		rNewNode.End = End;
 		rNewNode.lptr = NULL;
 		rNewNode.rptr = NULL;
-		
+
 		if(Depth == LogSamples-1){
-			dsplit[CurSamp-1].Cnt = lNewNode.Cnt;
-			dsplit[CurSamp].Cnt = rNewNode.Cnt;
+			dsplit[CurSamp-1].Cnt = (int) lNewNode.Cnt;
+			dsplit[CurSamp].Cnt = (int) rNewNode.Cnt;
 			lNewNode.Sample = CurSamp;
 			CurSamp++;
 			rNewNode.Sample = CurSamp;
 			CurSamp++;
 		}
-		
+
 		smallx = smally = smallz = HUGEDBL;
 		bigx = bigy = bigz = -HUGEDBL;
 
@@ -1045,7 +1048,7 @@ static void angTreeBuildRan(angTreeNode *node,double x[],double y[],double z[],p
 
 	if(Depth == LogSamples){
 		node->Sample = CurSamp;
-		dsplit[CurSamp-1].Cnt = node->Cnt;
+		dsplit[CurSamp-1].Cnt = (int) node->Cnt;
 		CurSamp++;
 		angTreeBuild(node,x,y,z,rand,TreeInd,Depth,LogSamples,dsplit,dataname,out);
 		return;
@@ -1118,7 +1121,7 @@ static void angTreeBuildRan(angTreeNode *node,double x[],double y[],double z[],p
 	isplit++;
 
 	lNewNode->Sample = node->Sample;
-	lNewNode->Cnt = DivideInd - node->Start + 1;
+	lNewNode->Cnt = (double) DivideInd - node->Start + 1;
 	lNewNode->Start = node->Start;
 	lNewNode->End = DivideInd;
 	lNewNode->lptr = NULL;
@@ -1275,7 +1278,7 @@ int angTree(char filename[],splitlog dsplit[],int NumData,int NumSamples,int fla
 	}
 
 	root->Sample = -1;
-	root->Cnt = NumData;
+	root->Cnt = (double) NumData;
 	root->Start = 0;
 	root->End = NumData-1;
 	root->lptr = NULL;
@@ -1320,7 +1323,7 @@ int angTree(char filename[],splitlog dsplit[],int NumData,int NumSamples,int fla
 	}else{
 		angTreeBuildRan(root,x,y,z,data,TreeInd,LogSamples,dsplit,0,filename,NULL);
 	}
-	
+
 	if(CurFile == 1){
 		rewind(hlist->out);
 		fwrite(&(hlist->Cnt),sizeof(int),1,hlist->out);
@@ -1361,7 +1364,6 @@ int angTree(char filename[],splitlog dsplit[],int NumData,int NumSamples,int fla
 			hlist = files;
 		}
 	}	
-
 	free(TreeInd);
 	
 	#ifdef USE_DISK
@@ -1372,6 +1374,5 @@ int angTree(char filename[],splitlog dsplit[],int NumData,int NumSamples,int fla
 	fflush(stdout);
 	free(data);
 	#endif
-
 	return CurFile;
 }
