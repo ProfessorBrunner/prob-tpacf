@@ -1,4 +1,4 @@
-/*test for pc source binary file */
+/*test for pc source binary file; takes binary file and reverses it to RA/DEC/PROBABILITY. works. */
 
 #include <stdio.h>
 #include <stdlib.h>

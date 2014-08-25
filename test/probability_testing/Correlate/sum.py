@@ -1,15 +1,20 @@
-def sum_numbers_in_file(filename):
-    """
+"""
 
    Abysmal script written on the fly to check if the test suggested by Matias works (it does but the bin counts are off by a couple thousand). To be changed later to make it less abysmal. 
 
-    """
+"""
+import os
+
+def sum_numbers_in_file(filename):
+
     with open(filename) as f:
         m = f.readlines()[2:]
         n = sum([sum([float(x) for x in line.split()]) for line in m]) 
         o = n - 0.316227766017
         f.close()
         return n
+
+os.chdir("/Users/harshilkamdar/Desktop/prob-tpacf/test/probability testing/Bins")
 
 a = sum_numbers_in_file('Original.dat_Original.dat_drbins')
 b = sum_numbers_in_file('Bin_1.dat_Bin_1.dat_drbins')
@@ -26,4 +31,5 @@ k = b+c+d+f+g+h+i+j+l
 
 print a
 print k
-print a-k
+
+print "Done!"
