@@ -15,4 +15,6 @@
 //#define USE_OMP
 //#define DEBUGME
 
+
 /* Parameters that control the estimation phase */
+//to be added
