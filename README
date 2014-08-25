@@ -1,8 +1,19 @@
-Correlation Code - v.0.9
+Correlation Code - v.0.9.1
 Dolence & Brunner
 Brief summary of what the code does:
 
 The Two-Point Angular Correlation function, simply put, quantifies the excess probability above a random distribution of finding an astronomical body (in this case, galaxy) within a specified angle of another astronomical body. To see how it's applied to a particular data set, see http://arxiv.org/pdf/1303.2432v2.pdf (where the Two-Point function is applied to the seventh data release of the Sloan Digital Sky Survey). If you look at correlate.c, there's two main functions that do the work, dualTreeACSpatial and dualTreeACAngular (to get a feel of how the two algorithms are implemented, refer to http://www.linuxclustersinstitute.org/conferences/archive/2008/PDF/Dolence_98279.pdf). 
+
+The Probabilistic TPACF is an extension of the regular TPACF that incorporates probability weights for individual points when calculating bin counts to calculate the correlation function. 
+
+Methodology: Enable reading in probabilities from source data files, struct containing information about each data point populated with probability values, recursive KD-tree algorithm to traverse the tree and propogate probabilities of points through the tree (description of tree structure in Moore et al.) The main correlation function is then modified to take into account the probability of two points when populating bins. 
+
+Format for data file for precomputation (examples in test/probability_testing/data):
+
+/*RA DEC PROBABILITY*/
+170 -1 0.58
+169 0.5 0.34
+.. .. ..
 
 Instructions for trying out the code on your machine:
 
